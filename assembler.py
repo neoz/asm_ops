@@ -21,22 +21,25 @@ class InputError(Error):
         self.msg = msg
 
 def get_arch():
-	(arch, bits) = (None, None)
+	(arch, mode) = (None, None)
+
 	for x in idaapi.ph_get_regnames():
 		name = x
-		if name == 'RAX':
+		if name.upper() == 'AX':
 			arch = KS_ARCH_X86
-			bits = KS_MODE_64
+			info = idaapi.get_inf_structure()
+			if info.is_64bit():
+				mode = KS_MODE_64
+			elif info.is_32bit():
+				mode = KS_MODE_32
+			else:
+				mode = KS_MODE_16
 			break
-		elif name == 'EAX':
-			arch = KS_ARCH_X86
-			bits = KS_MODE_32
-			break
-		elif name == 'R0':
+		elif name.upper() == 'R0':
 			arch = KS_ARCH_ARM
-			bits = KS_MODE_ARM
+			mode = KS_MODE_ARM
 			break
-	return (arch, bits)
+	return (arch, mode)
 
 def get_thumb(ea):
 	val = idc.GetReg(ea,'T')
